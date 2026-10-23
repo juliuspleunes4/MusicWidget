@@ -237,7 +237,7 @@ private struct SignedInView: View {
             Spacer(minLength: 0)
         }
         .padding(16)
-        .glassCard(26)
+        .glassCard(cornerRadius: 26)
     }
 
     private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
