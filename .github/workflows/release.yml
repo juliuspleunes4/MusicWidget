@@ -117,6 +117,28 @@ jobs:
           xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/MusicWidget.xcarchive" \
             -exportPath "$RUNNER_TEMP/export" -exportOptionsPlist "$RUNNER_TEMP/export.plist"
 
+      - name: Diagnostics (signing, entitlements, profiles)
+        continue-on-error: true
+        run: |
+          APP="$RUNNER_TEMP/export/MusicWidget.app"
+          APPEX="$APP/Contents/PlugIns/MusicWidgetExtension.appex"
+          for T in "$APP" "$APPEX"; do
+            echo "=================== $T"
+            codesign --verify --deep --strict --verbose=2 "$T" 2>&1 | tail -n 5
+            echo "--- signature"; codesign -dv "$T" 2>&1 | grep -E "Identifier|Authority|TeamIdentifier|flags|Runtime"
+            echo "--- entitlements in signature"; codesign -d --entitlements :- "$T" 2>/dev/null
+            echo "--- embedded profile"
+            if [ -f "$T/Contents/embedded.provisionprofile" ]; then
+              security cms -D -i "$T/Contents/embedded.provisionprofile" > "$RUNNER_TEMP/p.plist"
+              /usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/p.plist"
+              /usr/libexec/PlistBuddy -c 'Print :Entitlements' "$RUNNER_TEMP/p.plist"
+            else echo "NO embedded.provisionprofile"; fi
+          done
+          echo "=================== Info.plist of appex"
+          plutil -p "$APPEX/Contents/Info.plist"
+          echo "=================== tree"
+          find "$APP" -maxdepth 4 | head -n 40
+
       - name: Build DMG
         run: |
           mkdir -p dmg-root
