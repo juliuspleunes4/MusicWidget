@@ -18,5 +18,5 @@ enum AppConfig {
     ]
 
     static let widgetKind = "MusicWidget"
-    static var isConfigured: Bool { clientID != "YOUR_SPOTIFY_CLIENT_ID" && !clientID.isEmpty }
+    static var isConfigured: Bool { !clientID.isEmpty && !clientID.hasPrefix("YOUR_") }
 }
