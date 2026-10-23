@@ -8,7 +8,7 @@ options:
 settings:
   base:
     # >>> Change these two for your own account <<<
-    BUNDLE_ID_BASE: com.juliuspleunes.MusicWidget   # must match the App IDs registered at developer.apple.com
+    BUNDLE_ID_BASE: com.pleunes.MusicWidget   # must match the App IDs registered at developer.apple.com
     DEVELOPMENT_TEAM: 4LF49CXB99
     SWIFT_VERSION: "5.9"
     CODE_SIGN_STYLE: Automatic
