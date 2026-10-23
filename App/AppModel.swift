@@ -9,6 +9,7 @@ final class AppModel: ObservableObject {
     @Published var nowPlaying: PlaybackState?
     @Published var errorMessage: String?
     @Published var isBusy = false
+    @Published var style = StyleStore.load()
 
     private var pollTask: Task<Void, Never>?
     private var lastSignature = ""
@@ -52,6 +53,15 @@ final class AppModel: ObservableObject {
             if (error as? ASWebAuthenticationSessionError)?.code == .canceledLogin { return }
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Changes the look used by every widget that is set to "Same as app".
+    func updateStyle(_ change: (inout WidgetStyle) -> Void) {
+        var updated = style
+        change(&updated)
+        style = updated
+        StyleStore.save(updated)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func signOut() {

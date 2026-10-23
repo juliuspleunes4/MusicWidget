@@ -4,10 +4,14 @@ import AppIntents
 // MARK: - Options (these are also the widget's settings)
 
 enum ThemeOption: String, AppEnum, CaseIterable {
-    case system, light, dark, ultraDark, midnight, ocean, forest, sunset, rose, lavender
+    case appDefault, system, light, dark, ultraDark, midnight, ocean, forest, sunset, rose, lavender
+
+    /// Themes you can actually pick in the app (`appDefault` only means "use whatever the app is set to").
+    static var concrete: [ThemeOption] { allCases.filter { $0 != .appDefault } }
 
     static var typeDisplayRepresentation: TypeDisplayRepresentation = "Theme"
     static var caseDisplayRepresentations: [ThemeOption: DisplayRepresentation] = [
+        .appDefault: "Same as app",
         .system: "Automatic (follows macOS)",
         .light: "Light",
         .dark: "Dark",
@@ -22,6 +26,7 @@ enum ThemeOption: String, AppEnum, CaseIterable {
 
     var label: String {
         switch self {
+        case .appDefault: return "Same as app"
         case .system: return "Automatic"
         case .ultraDark: return "Ultra Dark"
         default: return rawValue.prefix(1).uppercased() + rawValue.dropFirst()
@@ -30,10 +35,13 @@ enum ThemeOption: String, AppEnum, CaseIterable {
 }
 
 enum AccentOption: String, AppEnum, CaseIterable {
-    case themeDefault, spotifyGreen, white, red, orange, yellow, blue, purple, pink
+    case appDefault, themeDefault, spotifyGreen, white, red, orange, yellow, blue, purple, pink
+
+    static var concrete: [AccentOption] { allCases.filter { $0 != .appDefault } }
 
     static var typeDisplayRepresentation: TypeDisplayRepresentation = "Accent Color"
     static var caseDisplayRepresentations: [AccentOption: DisplayRepresentation] = [
+        .appDefault: "Same as app",
         .themeDefault: "Theme default",
         .spotifyGreen: "Spotify green",
         .white: "White",
@@ -47,7 +55,7 @@ enum AccentOption: String, AppEnum, CaseIterable {
 
     var color: Color? {
         switch self {
-        case .themeDefault: return nil
+        case .themeDefault, .appDefault: return nil
         case .spotifyGreen: return Color(red: 0.12, green: 0.84, blue: 0.38)
         case .white: return .white
         case .red: return Color(red: 1.0, green: 0.35, blue: 0.35)
@@ -61,24 +69,35 @@ enum AccentOption: String, AppEnum, CaseIterable {
 }
 
 enum CornerOption: String, AppEnum, CaseIterable {
-    case sharp, soft, round
+    case appDefault, sharp, soft, round
+
+    static var concrete: [CornerOption] { allCases.filter { $0 != .appDefault } }
 
     static var typeDisplayRepresentation: TypeDisplayRepresentation = "Artwork Corners"
     static var caseDisplayRepresentations: [CornerOption: DisplayRepresentation] = [
-        .sharp: "Sharp", .soft: "Soft", .round: "Round",
+        .appDefault: "Same as app", .sharp: "Sharp", .soft: "Soft", .round: "Round",
     ]
+
+    var label: String {
+        switch self {
+        case .appDefault: return "Same as app"
+        case .sharp: return "Sharp"
+        case .soft: return "Soft"
+        case .round: return "Round"
+        }
+    }
 
     var scale: CGFloat {
         switch self {
         case .sharp: return 0.1
-        case .soft: return 1
+        case .soft, .appDefault: return 1
         case .round: return 1.8
         }
     }
 }
 
 /// Everything a widget needs to know about how it should look.
-struct WidgetStyle {
+struct WidgetStyle: Codable {
     var theme: ThemeOption = .system
     var accent: AccentOption = .themeDefault
     var corners: CornerOption = .soft
@@ -119,7 +138,7 @@ struct ThemePalette {
     private static func base(for theme: ThemeOption) -> ThemePalette {
         let green = hex(0x1ED760)
         switch theme {
-        case .system:
+        case .system, .appDefault:
             return .init(colors: [Color(nsColor: .windowBackgroundColor)], text: .primary, secondary: .secondary, accent: green)
         case .light:
             return .init(colors: [hex(0xF7F7F8)], text: hex(0x16161A), secondary: hex(0x16161A).opacity(0.55), accent: hex(0x15A84A))

@@ -150,12 +150,41 @@ private struct SignedInView: View {
                     .glassCard()
                 }
 
-                group("Themes") {
-                    VStack(alignment: .leading, spacing: 12) {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 74), spacing: 12)], spacing: 14) {
-                            ForEach(ThemeOption.allCases, id: \.self) { ThemeSwatch(theme: $0) }
+                group("Appearance") {
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Theme").font(.subheadline.weight(.medium))
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 74), spacing: 12)], spacing: 14) {
+                                ForEach(ThemeOption.concrete, id: \.self) { theme in
+                                    ThemeSwatch(theme: theme, isSelected: model.style.theme == theme)
+                                        .onTapGesture { model.updateStyle { $0.theme = theme } }
+                                }
+                            }
                         }
-                        Text("Each widget has its own theme, accent color and corner style.")
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Accent color").font(.subheadline.weight(.medium))
+                            HStack(spacing: 12) {
+                                ForEach(AccentOption.concrete, id: \.self) { accent in
+                                    AccentDot(accent: accent, theme: model.style.theme, isSelected: model.style.accent == accent)
+                                        .onTapGesture { model.updateStyle { $0.accent = accent } }
+                                }
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Artwork corners").font(.subheadline.weight(.medium))
+                            Picker("Artwork corners", selection: Binding(
+                                get: { model.style.corners },
+                                set: { corners in model.updateStyle { $0.corners = corners } }
+                            )) {
+                                ForEach(CornerOption.concrete, id: \.self) { Text($0.label).tag($0) }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                        }
+
+                        Text("Applies to every widget. To give one widget its own look, right-click it and choose Edit “Music”.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -260,6 +289,7 @@ private struct SignedInView: View {
 
 private struct ThemeSwatch: View {
     let theme: ThemeOption
+    let isSelected: Bool
 
     var body: some View {
         let p = ThemePalette.make(theme: theme, accent: .themeDefault)
@@ -274,8 +304,40 @@ private struct ThemeSwatch: View {
             }
             .frame(height: 54)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(.quaternary))
-            Text(theme.label).font(.caption2).foregroundStyle(.secondary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 3 : 1)
+            )
+            Text(theme.label)
+                .font(.caption2)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .foregroundStyle(isSelected ? .primary : .secondary)
         }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+}
+
+private struct AccentDot: View {
+    let accent: AccentOption
+    let theme: ThemeOption
+    let isSelected: Bool
+
+    var body: some View {
+        let color = accent.color ?? ThemePalette.make(theme: theme, accent: .themeDefault).accent
+        ZStack {
+            Circle().fill(color)
+            if accent == .themeDefault {
+                Image(systemName: "wand.and.stars").font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.9))
+            }
+        }
+        .frame(width: 26, height: 26)
+        .overlay(Circle().stroke(Color.primary.opacity(0.15), lineWidth: 1))
+        .padding(3)
+        .overlay(Circle().stroke(isSelected ? Color.accentColor : .clear, lineWidth: 2.5))
+        .contentShape(Circle())
+        .accessibilityLabel(Text(accent == .themeDefault ? "Theme default" : accent.rawValue.capitalized))
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }

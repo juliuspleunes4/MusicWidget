@@ -37,20 +37,27 @@ struct WidgetConfigIntent: WidgetConfigurationIntent {
     @Parameter(title: "Time Range (Top Tracks / Artists)", default: .medium)
     var timeRange: TimeRange
 
-    @Parameter(title: "Theme", default: .system)
+    @Parameter(title: "Theme", default: .appDefault)
     var theme: ThemeOption
 
-    @Parameter(title: "Accent Color", default: .themeDefault)
+    @Parameter(title: "Accent Color", default: .appDefault)
     var accent: AccentOption
 
-    @Parameter(title: "Artwork Corners", default: .soft)
+    @Parameter(title: "Artwork Corners", default: .appDefault)
     var corners: CornerOption
 
     @Parameter(title: "Blurred Artwork Background (Now Playing)", default: false)
     var artworkBackdrop: Bool
 
+    /// Anything left on "Same as app" takes the look chosen in the app window.
     var style: WidgetStyle {
-        WidgetStyle(theme: theme, accent: accent, corners: corners, artworkBackdrop: artworkBackdrop)
+        let app = StyleStore.load()
+        return WidgetStyle(
+            theme: theme == .appDefault ? app.theme : theme,
+            accent: accent == .appDefault ? app.accent : accent,
+            corners: corners == .appDefault ? app.corners : corners,
+            artworkBackdrop: artworkBackdrop
+        )
     }
 
     init() {}
