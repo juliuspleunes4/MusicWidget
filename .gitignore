@@ -1,0 +1,9 @@
+*.xcodeproj
+xcuserdata/
+DerivedData/
+build/
+.DS_Store
+App/Info.plist
+App/MusicWidget.entitlements
+Widget/Info.plist
+Widget/MusicWidgetExtension.entitlements
