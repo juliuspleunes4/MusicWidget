@@ -27,18 +27,21 @@ jobs:
           WIDGET_PROFILE_B64: ${{ secrets.WIDGET_PROFILE_B64 }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
-          SPOTIFY_CLIENT_ID: ${{ vars.SPOTIFY_CLIENT_ID }}
         run: |
           missing=0
-          for v in MACOS_CERT_P12 MACOS_CERT_PASSWORD APP_PROFILE_B64 WIDGET_PROFILE_B64 APPLE_ID APPLE_APP_PASSWORD SPOTIFY_CLIENT_ID; do
+          for v in MACOS_CERT_P12 MACOS_CERT_PASSWORD APP_PROFILE_B64 WIDGET_PROFILE_B64 APPLE_ID APPLE_APP_PASSWORD; do
             if [ -z "${!v}" ]; then echo "::error::Missing secret/variable: $v"; missing=1; fi
           done
           exit $missing
 
-      - name: Insert Spotify Client ID
+      # Optional built-in default. Without it, users enter their own Client ID in the app.
+      - name: Insert default Spotify Client ID
         env:
           SPOTIFY_CLIENT_ID: ${{ vars.SPOTIFY_CLIENT_ID }}
-        run: sed -i '' "s/YOUR_SPOTIFY_CLIENT_ID/${SPOTIFY_CLIENT_ID}/" Shared/Config.swift
+        run: |
+          if [ -n "$SPOTIFY_CLIENT_ID" ]; then
+            sed -i '' "s/\"YOUR_SPOTIFY_CLIENT_ID\"/\"${SPOTIFY_CLIENT_ID}\"/" Shared/Config.swift
+          fi
 
       - name: Install XcodeGen and generate project
         run: |

@@ -10,6 +10,8 @@ final class AppModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isBusy = false
 
+    @Published var customClientID = ClientIDStore.load() ?? ""
+
     private var pollTask: Task<Void, Never>?
     private var lastSignature = ""
 
@@ -23,7 +25,7 @@ final class AppModel: ObservableObject {
     /// (supplied by the view, which owns the `webAuthenticationSession` environment value).
     func signIn(authenticate: (URL) async throws -> URL) async {
         guard AppConfig.isConfigured else {
-            errorMessage = "Set your Spotify Client ID in Shared/Config.swift first."
+            errorMessage = "Add your Spotify Client ID first (see “Set up your Spotify app”)."
             return
         }
         isBusy = true
@@ -52,6 +54,17 @@ final class AppModel: ObservableObject {
             if (error as? ASWebAuthenticationSessionError)?.code == .canceledLogin { return }
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Saves (or clears, when empty) the user's own Spotify app Client ID. Tokens belong to one app, so sign out first.
+    func saveClientID(_ raw: String) {
+        let id = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard id != customClientID else { return }
+        signOut()
+        if id.isEmpty { ClientIDStore.clear() } else { ClientIDStore.save(id) }
+        customClientID = id
+        errorMessage = nil
+        objectWillChange.send()
     }
 
     func signOut() {
