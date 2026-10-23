@@ -8,9 +8,9 @@ struct MusicWidgetApp: App {
         Window("Music Widget", id: "main") {
             ContentView()
                 .environmentObject(model)
-                .frame(minWidth: 460, idealWidth: 480, minHeight: 520, idealHeight: 680)
         }
-        .windowResizability(.contentMinSize)
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
 
         // Keeps the app alive in the menu bar so it can nudge the widgets when the track changes.
         MenuBarExtra("Music Widget", systemImage: "music.note") {
