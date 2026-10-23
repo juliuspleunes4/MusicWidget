@@ -134,7 +134,12 @@ jobs:
             --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$APPLE_APP_PASSWORD" \
             --wait --output-format json | tee notary.json
           grep -q '"status" *: *"Accepted"' notary.json
-          xcrun stapler staple MusicWidget.dmg
+          # Apple's ticket service occasionally drops the connection or lags behind; retry.
+          for i in 1 2 3 4 5 6; do
+            if xcrun stapler staple MusicWidget.dmg; then break; fi
+            [ "$i" = 6 ] && exit 1
+            echo "Stapling failed (attempt $i), retrying in 30s..."; sleep 30
+          done
           xcrun stapler validate MusicWidget.dmg
           spctl --assess --type open --context context:primary-signature -v MusicWidget.dmg || true
 
