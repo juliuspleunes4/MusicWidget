@@ -3,7 +3,7 @@ import AppIntents
 
 // MARK: - Options (these are also the widget's settings)
 
-enum ThemeOption: String, AppEnum, CaseIterable {
+enum ThemeOption: String, AppEnum, CaseIterable, Codable {
     case appDefault, system, light, dark, ultraDark, midnight, ocean, forest, sunset, rose, lavender
 
     /// Themes you can actually pick in the app (`appDefault` only means "use whatever the app is set to").
@@ -34,7 +34,7 @@ enum ThemeOption: String, AppEnum, CaseIterable {
     }
 }
 
-enum AccentOption: String, AppEnum, CaseIterable {
+enum AccentOption: String, AppEnum, CaseIterable, Codable {
     case appDefault, themeDefault, spotifyGreen, white, red, orange, yellow, blue, purple, pink
 
     static var concrete: [AccentOption] { allCases.filter { $0 != .appDefault } }
@@ -68,7 +68,7 @@ enum AccentOption: String, AppEnum, CaseIterable {
     }
 }
 
-enum CornerOption: String, AppEnum, CaseIterable {
+enum CornerOption: String, AppEnum, CaseIterable, Codable {
     case appDefault, sharp, soft, round
 
     static var concrete: [CornerOption] { allCases.filter { $0 != .appDefault } }
