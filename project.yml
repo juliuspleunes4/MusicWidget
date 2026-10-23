@@ -8,8 +8,8 @@ options:
 settings:
   base:
     # >>> Change these two for your own account <<<
-    BUNDLE_ID_BASE: com.example.MusicWidget
-    DEVELOPMENT_TEAM: ""            # your 10-character Apple Team ID
+    BUNDLE_ID_BASE: com.juliuspleunes.MusicWidget   # must match the App IDs registered at developer.apple.com
+    DEVELOPMENT_TEAM: 4LF49CXB99
     SWIFT_VERSION: "5.9"
     CODE_SIGN_STYLE: Automatic
     ENABLE_HARDENED_RUNTIME: YES
@@ -41,6 +41,11 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: "$(BUNDLE_ID_BASE)"
         PRODUCT_NAME: MusicWidget
         GENERATE_INFOPLIST_FILE: NO
+      configs:
+        Release:   # Developer ID signing; the profile names are supplied by the release workflow
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Developer ID Application"
+          PROVISIONING_PROFILE_SPECIFIER: "$(APP_PROFILE_NAME)"
 
   MusicWidgetExtension:
     type: app-extension
@@ -65,3 +70,8 @@ targets:
         PRODUCT_NAME: MusicWidgetExtension
         SKIP_INSTALL: YES
         GENERATE_INFOPLIST_FILE: NO
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Developer ID Application"
+          PROVISIONING_PROFILE_SPECIFIER: "$(WIDGET_PROFILE_NAME)"
