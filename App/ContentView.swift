@@ -6,8 +6,6 @@ struct ContentView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.webAuthenticationSession) private var webAuth
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
-    @State private var showSetup = !AppConfig.isConfigured
-    @State private var clientIDField = ""
 
     var body: some View {
         ScrollView { content }
@@ -16,6 +14,11 @@ struct ContentView: View {
     private var content: some View {
         VStack(alignment: .leading, spacing: 20) {
             header
+
+            if !AppConfig.isConfigured {
+                Label("Set your Spotify Client ID in Shared/Config.swift, then rebuild.", systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+            }
 
             if model.isSignedIn {
                 signedIn
@@ -57,54 +60,8 @@ struct ContentView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .tint(.green)
-            .disabled(model.isBusy || !AppConfig.isConfigured)
-
-            setupGuide
+            .disabled(model.isBusy)
         }
-    }
-
-    /// Spotify limits how many people one developer app can serve, so each user connects through their own free app.
-    private var setupGuide: some View {
-        DisclosureGroup("Set up your Spotify app", isExpanded: $showSetup) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Spotify only lets a few people use any one developer app, so you connect with your own. It takes about two minutes and is free (Spotify requires Premium to create one).")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 4) {
-                        Text("1. Open the")
-                        Link("Spotify Developer Dashboard", destination: URL(string: "https://developer.spotify.com/dashboard")!)
-                        Text("and click **Create app**.")
-                    }
-                    HStack(spacing: 6) {
-                        Text("2. Set the Redirect URI to")
-                        Text(AppConfig.redirectURI).font(.system(.callout, design: .monospaced)).textSelection(.enabled)
-                        Button("Copy") {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(AppConfig.redirectURI, forType: .string)
-                        }
-                        .controlSize(.small)
-                    }
-                    Text("3. Tick **Web API**, agree to the terms, and save.")
-                    Text("4. Open the app’s **Settings**, copy the **Client ID**, and paste it here:")
-                }
-                .font(.callout)
-                HStack {
-                    TextField("Client ID", text: $clientIDField)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.system(.body, design: .monospaced))
-                    Button("Save") { model.saveClientID(clientIDField) }
-                        .disabled(clientIDField.trimmingCharacters(in: .whitespaces) == model.customClientID)
-                }
-                if !model.customClientID.isEmpty {
-                    Text("Using your own Spotify app. Clear the field and save to go back to the built-in one.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.top, 6)
-        }
-        .onAppear { clientIDField = model.customClientID }
     }
 
     private var signedIn: some View {
